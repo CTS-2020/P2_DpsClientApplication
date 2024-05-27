@@ -20,7 +20,7 @@ namespace Perodua
     {
         public static DataSet SrcDpsResult()
         {
-            String sqlQuery = "SELECT BodySeq AS 'Body Seq', IDN AS 'Id No', IDVer AS 'Id Ver', ChassisNo AS 'Chassis No', Model AS 'Model', Sfx AS 'Sfx', Color AS 'Color', DPSImportDate AS 'Dps Import Date' FROM DPSResult";
+            String sqlQuery = "SELECT URN AS 'URN No', Line AS 'Line', BodySeq AS 'Body Seq', IDN AS 'Id No', IDVer AS 'Id Ver', ChassisNo AS 'Chassis No', Model AS 'Model', Sfx AS 'Sfx', Color AS 'Color', DPSImportDate AS 'Dps Import Date' FROM DPSResult";
 
             try
             {
@@ -65,7 +65,7 @@ namespace Perodua
 
         public static DataSet SrcDpsConvResult()
         {
-            String sqlQuery = "SELECT plc_no AS 'Plc No', write_pointer AS 'Write Pointer', dps_ins_code AS 'Instruction Code', id_no AS 'ID No', id_ver AS 'ID Ver', chassis_no AS 'Chassis No', bseq AS 'Body Seq', model AS 'Model', sfx AS 'Sfx', color_code AS 'Color', last_updated AS 'Last Updated' FROM dt_DpsResultConv ORDER BY last_updated DESC";
+            String sqlQuery = "SELECT plc_no AS 'Plc No',Line AS 'Line', URN AS 'URN No', write_pointer AS 'Write Pointer', dps_ins_code AS 'Instruction Code', id_no AS 'ID No', id_ver AS 'ID Ver', chassis_no AS 'Chassis No', bseq AS 'Body Seq', model AS 'Model', sfx AS 'Sfx', color_code AS 'Color', last_updated AS 'Last Updated' FROM dt_DpsResultConv ORDER BY last_updated DESC";
 
             try
             {
@@ -233,14 +233,14 @@ namespace Perodua
             try
             {
                 string path = @"C:\Logs\Application_Log\";
-                
+
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
                 }
 
                 path = path + "DPS_Monitor_" + DateTime.Today.ToString("ddMMyyyy") + ".log";
-                
+
                 if (!File.Exists(path))
                 {
                     using (StreamWriter sw = File.CreateText(path))
@@ -298,6 +298,34 @@ namespace Perodua
             }
             catch { }
             {
+            }
+        }
+
+        public static DataSet SrcQuantityGearUp(string URN, string Plc, string GwNo)
+        {
+            //String sqlQuery = "SELECT plc_no AS 'Plc No',Line AS 'Line', URN AS 'URN No', write_pointer AS 'Write Pointer', dps_ins_code AS 'Instruction Code', id_no AS 'ID No', id_ver AS 'ID Ver', chassis_no AS 'Chassis No', bseq AS 'Body Seq', model AS 'Model', sfx AS 'Sfx', color_code AS 'Color', last_updated AS 'Last Updated' FROM dt_DpsResultConv ORDER BY last_updated DESC";
+            int lmStart = 1;
+            int lmEnd = 64;
+
+            StringBuilder columnNames = new StringBuilder();
+            for (int lm = lmStart; lm <= lmEnd; lm++)
+            {
+                if (lm > lmStart) // Add a comma before all but the first column
+                {
+                    columnNames.Append(", ");
+                }
+                columnNames.Append($"QtyGw{GwNo}Lm{lm}");
+            }
+            String sqlQuery = $"SELECT {columnNames} FROM dt_DpsResultConv WHERE URN = '{URN}' AND plc_no = '{Plc}'";
+
+            try
+            {
+                return ConnQuery.getDpsBindingDatasetData(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                return null;
             }
         }
     }

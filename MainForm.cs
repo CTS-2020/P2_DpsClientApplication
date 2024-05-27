@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Net.NetworkInformation;
 using System.Configuration;
+using System.Security.Policy;
 
 namespace Perodua
 {
@@ -29,7 +30,7 @@ namespace Perodua
             {
                 InitializeComponent();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 csDatabase.Log(ex);
                 MessageBox.Show("Unable to initialize program.");
@@ -231,6 +232,15 @@ namespace Perodua
                 dtDpsConvResult = dsDpsConvResult.Tables[0];
                 gvResultConv.DataSource = dtDpsConvResult;
 
+                //DataGridViewLinkColumn linkColumn = new DataGridViewLinkColumn();
+                //linkColumn.HeaderText = "URN";
+                //linkColumn.Name = "URN";
+                //linkColumn.DataPropertyName = "URN"; // Bind the URN column value to the link text
+                ////gvResultConv.Columns.Add(linkColumn);
+                //gvResultConv.Columns.Insert(2, linkColumn);
+                AddLinkColumnIfNotExists("URN No");
+                gvResultConv.CellContentClick -= gvResultConv_CellContentClick;
+                gvResultConv.CellContentClick += gvResultConv_CellContentClick;
                 gvPisTracking.FirstDisplayedScrollingRowIndex = gvPisTracking.RowCount - 1;
             }
             catch (Exception ex)
@@ -422,7 +432,7 @@ namespace Perodua
                                 {
                                     BindDpsResultGridView();
                                     BindDpsResultConvGridView();
-                                    
+
                                     pbGenIns.Image = global::Perodua.Properties.Resources.green;
 
                                     txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Normal: " + "[Upd DPS] OK, IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] PLC[" + i.ToString() + "] PO[" + strWritePointer + "] INS.CODE[" + strInsCode + "] SFX[" + strSfx + "] COLOR[" + strColor + "] UPDATED[" + strCurDateTime + "]" + txtLog.Text;
@@ -499,6 +509,106 @@ namespace Perodua
                 MessageBox.Show("Unable to stop process.");
             }
         }
+
+        PassIn passIn = new PassIn();
+        private void gvResultConv_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Check if the link column was clicked
+            if (e.ColumnIndex == gvResultConv.Columns["URN No"].Index && e.RowIndex >= 0)
+            {
+                // Get the value of the "URN" column for the selected row
+                string urn = gvResultConv.Rows[e.RowIndex].Cells["URN No"].Value.ToString();
+                // Get the value of the "Details" column for the selected row
+                string plcNo = gvResultConv.Rows[e.RowIndex].Cells["Plc No"].Value.ToString();
+                // Show the details in a popup window
+                //DetailForm detailForm = new DetailForm(urn, details);
+                //detailForm.ShowDialog();
+
+                passIn.URN = urn;
+                passIn.PlcNo = plcNo;
+                passIn.GwNo = "1";
+                openDialog(passIn);
+            }
+        }
+
+        private void popUp_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // Perform actions after the dialog form is closed
+            if (((QuantityPopUpForm)sender).DialogResult == DialogResult.OK)
+            {
+                string updatedValue = ((QuantityPopUpForm)sender).SelectedGwNo;
+                bool open = ((QuantityPopUpForm)sender).ReOpenInd;
+                passIn.GwNo = updatedValue;
+                if (open)
+                {
+                    // Use a timer to ensure the form is fully closed before reopening a new one
+                    Timer timer = new Timer { Interval = 100 }; // 100 ms delay
+                    timer.Tick += (s, args) =>
+                    {
+                        timer.Stop();
+                        openDialog(passIn);
+                    };
+                    timer.Start();
+                }
+            }
+        }
+        private void openDialog(PassIn passIn)
+        {
+            QuantityPopUpForm popUp = new QuantityPopUpForm(passIn);
+
+            popUp.FormClosed -= popUp_FormClosed;
+            popUp.FormClosed += popUp_FormClosed;
+
+            int desiredWidth = (int)(this.Width * 0.8);
+            int desiredHeight = (int)(this.Height * 0.7);
+            popUp.Size = new Size(desiredWidth, desiredHeight);
+
+            popUp.StartPosition = FormStartPosition.CenterParent;
+            popUp.ShowDialog(this);
+        }
+
+        private void AddLinkColumnIfNotExists(string columnName)
+        {
+            // Check if the column already exists
+            //if (!gvResultConv.Columns.Cast<DataGridViewColumn>().Any(col => col.Name == columnName))
+            //{
+            //    // Add a link column
+            //    DataGridViewLinkColumn linkColumn = new DataGridViewLinkColumn();
+            //    linkColumn.HeaderText = columnName;
+            //    linkColumn.Name = columnName;
+            //    linkColumn.DataPropertyName = columnName; // Bind the column values as link text
+
+            //    linkColumn.LinkColor = Color.Blue;
+            //    linkColumn.TrackVisitedState = false;
+            //    //linkColumn.UseColumnTextForLinkValue = true;
+            //    linkColumn.LinkBehavior = LinkBehavior.AlwaysUnderline;
+
+            //    gvResultConv.Columns.Insert(2, linkColumn); // Insert at the third position (index 2)
+            //}
+            var existingColumn = gvResultConv.Columns.Cast<DataGridViewColumn>().FirstOrDefault(col => col.Name == columnName);
+
+            if (!(existingColumn is DataGridViewLinkColumn))
+            {
+                // If the existing column is not a link column, replace it with a link column
+                int columnIndex = existingColumn.Index;
+                gvResultConv.Columns.Remove(existingColumn);
+
+                DataGridViewLinkColumn linkColumn = new DataGridViewLinkColumn();
+                linkColumn.HeaderText = columnName;
+                linkColumn.Name = columnName;
+                linkColumn.DataPropertyName = columnName; // Bind the column values as link text
+
+                // Customize the link appearance
+                linkColumn.LinkColor = Color.Blue;
+                linkColumn.TrackVisitedState = false;
+                linkColumn.LinkBehavior = LinkBehavior.AlwaysUnderline;
+
+                gvResultConv.Columns.Insert(columnIndex, linkColumn);
+            }
+
+        }
+
+
         #endregion
 
         #region Events
@@ -516,7 +626,7 @@ namespace Perodua
                 //{
                 //    do_process();
                 //}
-                ping_tick(sender,e);
+                ping_tick(sender, e);
 
                 if (iPisConnInterval < 3000)
                 {
@@ -552,5 +662,12 @@ namespace Perodua
             }
         }
         #endregion
+
+        public class PassIn
+        {
+            public string PlcNo { get; set; }
+            public string URN { get; set; }
+            public string GwNo { get; set; }
+        }
     }
 }
