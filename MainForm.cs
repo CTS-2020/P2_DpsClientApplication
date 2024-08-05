@@ -21,6 +21,7 @@ namespace Perodua
         String strPisIpAdd = ConfigurationManager.AppSettings["pisIpAdd"];
         int iPisConnInterval = Convert.ToInt32(ConfigurationManager.AppSettings["pisConnInterval"]);
         Boolean flagPIS;
+        String UrnNo = "";
         #endregion
 
         #region Load
@@ -208,6 +209,7 @@ namespace Perodua
                 dsDpsResult = csDatabase.SrcDpsResult();
 
                 dtDpsResult = dsDpsResult.Tables[0];
+                //UrnNo = dtDpsResult.Rows[0]["URN No"].ToString();
                 gvPisTracking.DataSource = dtDpsResult;
 
                 gvPisTracking.FirstDisplayedScrollingRowIndex = gvPisTracking.RowCount - 1;
@@ -277,6 +279,7 @@ namespace Perodua
                         String strSfx = "";
                         String strCurDateTime = "";
                         String strInsCode = "";
+                        String strURN = "";
                         #endregion
 
                         #region Get New Dps Result Info
@@ -307,6 +310,10 @@ namespace Perodua
                         if (Convert.ToString(dtNewDpsResult.Rows[i]["Sfx"]).Trim() != "")
                         {
                             strSfx = Convert.ToString(dtNewDpsResult.Rows[i]["Sfx"]);
+                        }
+                        if (Convert.ToString(dtNewDpsResult.Rows[i]["URN"]).Trim() != "")
+                        {
+                            strURN = Convert.ToString(dtNewDpsResult.Rows[i]["URN"]);
                         }
                         #endregion
 
@@ -381,6 +388,7 @@ namespace Perodua
                                 Boolean boolUpdConv = false;
                                 Boolean boolUpdPointer = false;
                                 Boolean boolUpdPis = false;
+                                Boolean boolUpdPrtQty = false;
                                 #endregion
 
                                 if (Convert.ToString(dtDpsPlcMst.Rows[iPlcCnt]["plc_no"]).Trim() != "")
@@ -421,11 +429,13 @@ namespace Perodua
                                     else
                                     {
                                         boolUpdConv = csDatabase.UpdDpsConv(strPlcNo, strWritePointer, strModel, strSfx, strColor, strInsCode, strBodySeq, strIdNo, strIdVer, strChassisNo, strDpsRsConvId);
+                                        boolUpdPrtQty = csDatabase.UpdNewPartQty(strURN, strPlcNo);
                                     }
                                 }
                                 else
                                 {
-                                    boolUpdConv = csDatabase.SvDpsConv(strPlcNo, strWritePointer, strModel, strSfx, strColor, strInsCode, strBodySeq, strIdNo, strIdVer, strChassisNo, strDpsRsConvId);
+                                    boolUpdConv = csDatabase.SvDpsConv(strPlcNo, strWritePointer, strModel, strSfx, strColor, strInsCode, strBodySeq, strIdNo, strIdVer, strChassisNo, strDpsRsConvId, strURN);
+                                    boolUpdPrtQty = csDatabase.UpdNewPartQty(strURN, strPlcNo);
                                 }
 
                                 if (boolUpdConv)
@@ -493,6 +503,7 @@ namespace Perodua
         {
             try
             {
+
                 ping.Stop();
                 process.Stop();
                 btnStart.Enabled = true;
@@ -502,6 +513,7 @@ namespace Perodua
                 pbPisConn.Image = global::Perodua.Properties.Resources.yellow;
                 txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Normal: " + "Process end." + txtLog.Text;
                 csDatabase.Log("---[" + DateTime.Now + "]--- Normal: " + "Process end.");
+                //Boolean boolUpdPrtQty = csDatabase.UpdNewPartQty("U2024001882", "1");
             }
             catch (Exception ex)
             {

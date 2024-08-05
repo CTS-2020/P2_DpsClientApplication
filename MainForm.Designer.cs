@@ -49,7 +49,7 @@
             this.gvResultConv = new System.Windows.Forms.DataGridView();
             this.gbLog = new System.Windows.Forms.GroupBox();
             this.txtLog = new System.Windows.Forms.TextBox();
-            this.btnPopUp = new System.Windows.Forms.Button();
+            //this.btnPopUp = new System.Windows.Forms.Button();
             this.gbStatusInd.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbGenIns)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPisConn)).BeginInit();
@@ -322,7 +322,7 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(1290, 1102);
-            this.Controls.Add(this.btnPopUp);
+            //this.Controls.Add(this.btnPopUp);
             this.Controls.Add(this.gbLog);
             this.Controls.Add(this.gbResultConv);
             this.Controls.Add(this.gbPisTracking);
@@ -371,7 +371,7 @@
         private System.Windows.Forms.DataGridView gvResultConv;
         private System.Windows.Forms.GroupBox gbLog;
         private System.Windows.Forms.TextBox txtLog;
-        private System.Windows.Forms.Button btnPopUp;
+        //private System.Windows.Forms.Button btnPopUp;
     }
 }
 
