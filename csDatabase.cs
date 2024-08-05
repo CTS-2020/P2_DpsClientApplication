@@ -20,7 +20,8 @@ namespace Perodua
     {
         public static DataSet SrcDpsResult()
         {
-            String sqlQuery = "SELECT URN AS 'URN No', Line AS 'Line', BodySeq AS 'Body Seq', IDN AS 'Id No', IDVer AS 'Id Ver', ChassisNo AS 'Chassis No', Model AS 'Model', Sfx AS 'Sfx', Color AS 'Color', DPSImportDate AS 'Dps Import Date' FROM DPSResult";
+            //String sqlQuery = "SELECT URN AS 'URN No', Line AS 'Line', BodySeq AS 'Body Seq', IDN AS 'Id No', IDVer AS 'Id Ver', ChassisNo AS 'Chassis No', Model AS 'Model', Sfx AS 'Sfx', Color AS 'Color', DPSImportDate AS 'Dps Import Date' FROM DPSResult";
+            String sqlQuery = "SELECT Line AS 'Line', BodySeq AS 'Body Seq', IDN AS 'Id No', IDVer AS 'Id Ver', ChassisNo AS 'Chassis No', Model AS 'Model', Sfx AS 'Sfx', Color AS 'Color', DPSImportDate AS 'Dps Import Date' FROM DPSResult";
 
             try
             {
@@ -65,7 +66,8 @@ namespace Perodua
 
         public static DataSet SrcDpsConvResult()
         {
-            String sqlQuery = "SELECT plc_no AS 'Plc No',Line AS 'Line', URN AS 'URN No', write_pointer AS 'Write Pointer', dps_ins_code AS 'Instruction Code', id_no AS 'ID No', id_ver AS 'ID Ver', chassis_no AS 'Chassis No', bseq AS 'Body Seq', model AS 'Model', sfx AS 'Sfx', color_code AS 'Color', last_updated AS 'Last Updated' FROM dt_DpsResultConv ORDER BY last_updated DESC";
+            //String sqlQuery = "SELECT plc_no AS 'Plc No',Line AS 'Line', URN AS 'URN No', write_pointer AS 'Write Pointer', dps_ins_code AS 'Instruction Code', id_no AS 'ID No', id_ver AS 'ID Ver', chassis_no AS 'Chassis No', bseq AS 'Body Seq', model AS 'Model', sfx AS 'Sfx', color_code AS 'Color', last_updated AS 'Last Updated' FROM dt_DpsResultConv ORDER BY last_updated DESC";
+            String sqlQuery = "SELECT plc_no AS 'Plc No',Line AS 'Line', write_pointer AS 'Write Pointer', dps_ins_code AS 'Instruction Code', id_no AS 'ID No', id_ver AS 'ID Ver', chassis_no AS 'Chassis No', bseq AS 'Body Seq', model AS 'Model', sfx AS 'Sfx', color_code AS 'Color', last_updated AS 'Last Updated' FROM dt_DpsResultConv ORDER BY last_updated DESC";
 
             try
             {

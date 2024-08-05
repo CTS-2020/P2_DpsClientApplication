@@ -240,10 +240,16 @@ namespace Perodua
                 //linkColumn.DataPropertyName = "URN"; // Bind the URN column value to the link text
                 ////gvResultConv.Columns.Add(linkColumn);
                 //gvResultConv.Columns.Insert(2, linkColumn);
-                AddLinkColumnIfNotExists("URN No");
-                gvResultConv.CellContentClick -= gvResultConv_CellContentClick;
-                gvResultConv.CellContentClick += gvResultConv_CellContentClick;
-                gvPisTracking.FirstDisplayedScrollingRowIndex = gvPisTracking.RowCount - 1;
+
+                if (dtDpsConvResult.Columns.Contains("URN No"))
+                {
+                    AddLinkColumnIfNotExists("URN No");
+                    gvResultConv.CellContentClick -= gvResultConv_CellContentClick;
+                    gvResultConv.CellContentClick += gvResultConv_CellContentClick;
+                    gvPisTracking.FirstDisplayedScrollingRowIndex = gvPisTracking.RowCount - 1;
+                }
+
+
             }
             catch (Exception ex)
             {
@@ -599,7 +605,7 @@ namespace Perodua
             //}
             var existingColumn = gvResultConv.Columns.Cast<DataGridViewColumn>().FirstOrDefault(col => col.Name == columnName);
 
-            if (!(existingColumn is DataGridViewLinkColumn))
+            if (existingColumn != null && !(existingColumn is DataGridViewLinkColumn))
             {
                 // If the existing column is not a link column, replace it with a link column
                 int columnIndex = existingColumn.Index;
