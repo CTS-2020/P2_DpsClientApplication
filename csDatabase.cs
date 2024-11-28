@@ -196,11 +196,11 @@ namespace Perodua
         //    }
         //}
 
-        public static Boolean UpdDpsConv(String strPlcNo, String strPointer, String strModel, String strSfx, String strColor, String strInsCode, String strBseq, String strIdNo, String strIdVer, String strChassisNo, String strDpsRsConvId)
+        public static Boolean UpdDpsConv(String strPlcNo, String strPointer, String strModel, String strSfx, String strColor, String strInsCode, String strBseq, String strIdNo, String strIdVer, String strChassisNo, String strDpsRsConvId, String strLine)
         {
             try
             {
-                String sqlQueryUpdConv = "UPDATE dt_DpsResultConv SET read_flag = '0', plc_no = '" + strPlcNo + "', write_pointer = '" + strPointer + "', model = '" + strModel + "', sfx = '" + strSfx + "', color_code = '" + strColor + "', dps_ins_code = '" + strInsCode + "', bseq = '" + strBseq + "', id_no = '" + strIdNo + "', id_ver = '" + strIdVer + "', chassis_no = '" + strChassisNo + "', last_updated = CURRENT_TIMESTAMP WHERE dps_rs_conv_id = '" + strDpsRsConvId + "';";
+                String sqlQueryUpdConv = "UPDATE dt_DpsResultConv SET Line = '" + strLine + "', read_flag = '0', plc_no = '" + strPlcNo + "', write_pointer = '" + strPointer + "', model = '" + strModel + "', sfx = '" + strSfx + "', color_code = '" + strColor + "', dps_ins_code = '" + strInsCode + "', bseq = '" + strBseq + "', id_no = '" + strIdNo + "', id_ver = '" + strIdVer + "', chassis_no = '" + strChassisNo + "', last_updated = CURRENT_TIMESTAMP WHERE dps_rs_conv_id = '" + strDpsRsConvId + "';";
                 String sqlQueryUpdPointer = "UPDATE dt_PlcPointerMst SET pointer = '" + Convert.ToString(Convert.ToInt32(strPointer) + 1) + "' WHERE plc_no = '" + strPlcNo + "' AND flag_type = 'W';";
                 String sqlQueryUpdPis = "UPDATE DPSResult SET DPSImportDate = CURRENT_TIMESTAMP WHERE IDN = '" + strIdNo + "' AND IDVer = '" + strIdVer + "';";
 
@@ -213,11 +213,11 @@ namespace Perodua
             }
         }
 
-        public static Boolean SvDpsConv(String strPlcNo, String strPointer, String strModel, String strSfx, String strColor, String strInsCode, String strBseq, String strIdNo, String strIdVer, String strChassisNo, String strDpsRsConvId, String strURN)
+        public static Boolean SvDpsConv(String strPlcNo, String strPointer, String strModel, String strSfx, String strColor, String strInsCode, String strBseq, String strIdNo, String strIdVer, String strChassisNo, String strDpsRsConvId, String strURN, String strLine)
         {
             try
             {
-                String sqlQueryUpdConv = "INSERT INTO dt_DpsResultConv (read_flag, plc_no, write_pointer, model, sfx, color_code, dps_ins_code, bseq, id_no, id_ver, chassis_no, last_updated, dps_rs_conv_id, URN) VALUES ('0', '" + strPlcNo + "', '" + strPointer + "', '" + strModel + "', '" + strSfx + "', '" + strColor + "', '" + strInsCode + "', '" + strBseq + "', '" + strIdNo + "', '" + strIdVer + "', '" + strChassisNo + "', CURRENT_TIMESTAMP, '" + strDpsRsConvId + "', '" + strURN + "')";
+                String sqlQueryUpdConv = "INSERT INTO dt_DpsResultConv (read_flag, plc_no, write_pointer, model, sfx, color_code, dps_ins_code, bseq, id_no, id_ver, chassis_no, last_updated, dps_rs_conv_id, URN,Line) VALUES ('0', '" + strPlcNo + "', '" + strPointer + "', '" + strModel + "', '" + strSfx + "', '" + strColor + "', '" + strInsCode + "', '" + strBseq + "', '" + strIdNo + "', '" + strIdVer + "', '" + strChassisNo + "', CURRENT_TIMESTAMP, '" + strDpsRsConvId + "', '" + strURN + "', '" + strLine + "')";
                 String sqlQueryUpdPointer = "UPDATE dt_PlcPointerMst SET pointer = '" + Convert.ToString(Convert.ToInt32(strPointer) + 1) + "' WHERE plc_no = '" + strPlcNo + "' AND flag_type = 'W';";
                 String sqlQueryUpdPis = "UPDATE DPSResult SET DPSImportDate = CURRENT_TIMESTAMP WHERE IDN = '" + strIdNo + "' AND IDVer = '" + strIdVer + "';";
 
@@ -331,22 +331,22 @@ namespace Perodua
             }
         }
 
-        public static Boolean UpdNewPartQty(String strUrn, String strPlcNo)
-        {
-            String sqlQuery1 = "DECLARE @sql NVARCHAR(MAX) = '';";
-            String sqlQuery = sqlQuery1 + $" SELECT @sql = @sql + ' UPDATE [PGMDPS].[dbo].[dt_DpsResultConv] SET QtyGw'+ CAST(GwNo AS NVARCHAR(10)) +'Lm' + CAST(LmPhysicalAddress AS NVARCHAR(10)) + ' = ' + CAST(PartQty AS NVARCHAR(10)) + ' WHERE URN = ''' + URN + ''' AND plc_no = ' + CAST(PlcNo AS NVARCHAR(10)) + ';' FROM (SELECT URN, PlcNo, GwNo, LmPhysicalAddress, PartQty FROM [PGMDPS].[dbo].[view_UnpivotedPrtQuantity] WHERE URN = '{strUrn}' AND PlcNo = {strPlcNo}) AS Sub;";
-            sqlQuery = sqlQuery + " EXEC sp_executesql @sql; ";
+        //public static Boolean UpdNewPartQty(String strUrn, String strPlcNo)
+        //{
+        //    String sqlQuery1 = "DECLARE @sql NVARCHAR(MAX) = '';";
+        //    String sqlQuery = sqlQuery1 + $" SELECT @sql = @sql + ' UPDATE [PGMDPS].[dbo].[dt_DpsResultConv] SET QtyGw'+ CAST(GwNo AS NVARCHAR(10)) +'Lm' + CAST(LmPhysicalAddress AS NVARCHAR(10)) + ' = ' + CAST(PartQty AS NVARCHAR(10)) + ' WHERE URN = ''' + URN + ''' AND plc_no = ' + CAST(PlcNo AS NVARCHAR(10)) + ';' FROM (SELECT URN, PlcNo, GwNo, LmPhysicalAddress, PartQty FROM [PGMDPS].[dbo].[view_UnpivotedPrtQuantity] WHERE URN = '{strUrn}' AND PlcNo = {strPlcNo}) AS Sub;";
+        //    sqlQuery = sqlQuery + " EXEC sp_executesql @sql; ";
 
-            try
-            {
-                return ConnQuery.ExecuteDpsQuery(sqlQuery);
-            }
-            catch (Exception ex)
-            {
-                csDatabase.Log(ex);
-                return false;
-            }
-        }
+        //    try
+        //    {
+        //        return ConnQuery.ExecuteDpsQuery(sqlQuery);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        csDatabase.Log(ex);
+        //        return false;
+        //    }
+        //}
         public void ExecuteBatchUpdates(string urn, int plcNo)
         {
             // Retrieve the connection string from the Web.config file
