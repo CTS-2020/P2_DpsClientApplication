@@ -71,17 +71,6 @@ namespace Perodua
             gbQuantity.Width = this.ClientSize.Width;
         }
 
-        private int[] CreateSampleData(int arrayLength)
-        {
-            int[] data = new int[arrayLength];
-            Random random = new Random();
-            for (int i = 0; i < data.Length; i++)
-            {
-                data[i] = random.Next(1, 101);
-            }
-            return data;
-        }
-
         private int[] GetQuantityValue()
         {
             DataSet dsDpsQuantity = new DataSet();

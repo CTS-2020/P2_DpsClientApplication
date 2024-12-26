@@ -244,8 +244,8 @@ namespace Perodua
                 if (dtDpsConvResult.Columns.Contains("URN No"))
                 {
                     AddLinkColumnIfNotExists("URN No");
-                    //gvResultConv.CellContentClick -= gvResultConv_CellContentClick;
-                    //gvResultConv.CellContentClick += gvResultConv_CellContentClick;
+                    gvResultConv.CellContentClick -= gvResultConv_CellContentClick;
+                    gvResultConv.CellContentClick += gvResultConv_CellContentClick;
                     gvPisTracking.FirstDisplayedScrollingRowIndex = gvPisTracking.RowCount - 1;
                 }
             }
@@ -354,6 +354,10 @@ namespace Perodua
                         {
                             strInsCode = "0";
                         }
+                        else if (strIdNo.StartsWith("E0000"))
+                        {
+                            strInsCode = "0";
+                        }
                         else
                         {
                             strInsCode = csDatabase.ChkInsCode(strModel, strSfx, strColor);
@@ -450,7 +454,7 @@ namespace Perodua
                                     }
                                     else
                                     {
-                                        boolUpdConv = csDatabase.UpdDpsConv(strPlcNo, strWritePointer, strModel, strSfx, strColor, strInsCode, strBodySeq, strIdNo, strIdVer, strChassisNo, strDpsRsConvId, strLine);
+                                        boolUpdConv = csDatabase.UpdDpsConv(strPlcNo, strWritePointer, strModel, strSfx, strColor, strInsCode, strBodySeq, strIdNo, strIdVer, strChassisNo, strDpsRsConvId, strURN, strLine);
                                         //boolUpdPrtQty = csDatabase.UpdNewPartQty(strURN, strPlcNo);
                                     }
                                 }
@@ -545,61 +549,60 @@ namespace Perodua
         }
 
         PassIn passIn = new PassIn();
-        //private void gvResultConv_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        //{
-        //    // Check if the link column was clicked
-        //    if (e.ColumnIndex == gvResultConv.Columns["URN No"].Index && e.RowIndex >= 0)
-        //    {
-        //        // Get the value of the "URN" column for the selected row
-        //        string urn = gvResultConv.Rows[e.RowIndex].Cells["URN No"].Value.ToString();
-        //        // Get the value of the "Details" column for the selected row
-        //        string plcNo = gvResultConv.Rows[e.RowIndex].Cells["Plc No"].Value.ToString();
-        //        // Show the details in a popup window
-        //        //DetailForm detailForm = new DetailForm(urn, details);
-        //        //detailForm.ShowDialog();
+        private void gvResultConv_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Check if the link column was clicked
+            if (e.ColumnIndex == gvResultConv.Columns["URN No"].Index && e.RowIndex >= 0)
+            {
+                // Get the value of the "URN" column for the selected row
+                string urn = gvResultConv.Rows[e.RowIndex].Cells["URN No"].Value.ToString();
+                // Get the value of the "Details" column for the selected row
+                string plcNo = gvResultConv.Rows[e.RowIndex].Cells["Plc No"].Value.ToString();
+                // Show the details in a popup window
+                //DetailForm detailForm = new DetailForm(urn, details);
+                //detailForm.ShowDialog();
 
-        //        passIn.URN = urn;
-        //        passIn.PlcNo = plcNo;
-        //        passIn.GwNo = "1";
-        //        //openDialog(passIn);
-        //    }
-        //}
+                passIn.URN = urn;
+                passIn.PlcNo = plcNo;
+                passIn.GwNo = "1";
+                openDialog(passIn);
+            }
+        }
+        private void popUp_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // Perform actions after the dialog form is closed
+            if (((QuantityPopUpForm)sender).DialogResult == DialogResult.OK)
+            {
+                string updatedValue = ((QuantityPopUpForm)sender).SelectedGwNo;
+                bool open = ((QuantityPopUpForm)sender).ReOpenInd;
+                passIn.GwNo = updatedValue;
+                if (open)
+                {
+                    // Use a timer to ensure the form is fully closed before reopening a new one
+                    Timer timer = new Timer { Interval = 100 }; // 100 ms delay
+                    timer.Tick += (s, args) =>
+                    {
+                        timer.Stop();
+                        openDialog(passIn);
+                    };
+                    timer.Start();
+                }
+            }
+        }
+        private void openDialog(PassIn passIn)
+        {
+            QuantityPopUpForm popUp = new QuantityPopUpForm(passIn);
 
-        //private void popUp_FormClosed(object sender, FormClosedEventArgs e)
-        //{
-        //    // Perform actions after the dialog form is closed
-        //    if (((QuantityPopUpForm)sender).DialogResult == DialogResult.OK)
-        //    {
-        //        string updatedValue = ((QuantityPopUpForm)sender).SelectedGwNo;
-        //        bool open = ((QuantityPopUpForm)sender).ReOpenInd;
-        //        passIn.GwNo = updatedValue;
-        //        if (open)
-        //        {
-        //            // Use a timer to ensure the form is fully closed before reopening a new one
-        //            Timer timer = new Timer { Interval = 100 }; // 100 ms delay
-        //            timer.Tick += (s, args) =>
-        //            {
-        //                timer.Stop();
-        //                openDialog(passIn);
-        //            };
-        //            timer.Start();
-        //        }
-        //    }
-        //}
-        //private void openDialog(PassIn passIn)
-        //{
-        //    QuantityPopUpForm popUp = new QuantityPopUpForm(passIn);
+            popUp.FormClosed -= popUp_FormClosed;
+            popUp.FormClosed += popUp_FormClosed;
 
-        //    popUp.FormClosed -= popUp_FormClosed;
-        //    popUp.FormClosed += popUp_FormClosed;
+            int desiredWidth = (int)(this.Width * 0.8);
+            int desiredHeight = (int)(this.Height * 0.7);
+            popUp.Size = new Size(desiredWidth, desiredHeight);
 
-        //    int desiredWidth = (int)(this.Width * 0.8);
-        //    int desiredHeight = (int)(this.Height * 0.7);
-        //    popUp.Size = new Size(desiredWidth, desiredHeight);
-
-        //    popUp.StartPosition = FormStartPosition.CenterParent;
-        //    popUp.ShowDialog(this);
-        //}
+            popUp.StartPosition = FormStartPosition.CenterParent;
+            popUp.ShowDialog(this);
+        }
 
         private void AddLinkColumnIfNotExists(string columnName)
         {
