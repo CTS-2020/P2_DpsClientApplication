@@ -514,15 +514,56 @@ namespace Perodua
                                             gwNo = Convert.ToString(GwNoPhyAddrDt.Rows[0]["gw_no"]);
                                             phhyAddr = Convert.ToString(GwNoPhyAddrDt.Rows[0]["physical_add"]);
 
-                                            Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(gwNo, phhyAddr, strURN, strPQuantity);
-                                            if (!blPartQuantityUpdated)
+                                            String QtyGwLm = csDatabase.GetQuantityValueFromGwLm(gwNo, phhyAddr, strURN);
+                                            if (QtyGwLm != "-99")
                                             {
-                                                pbGenIns.Image = global::Perodua.Properties.Resources.red;
-                                                txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
-                                                csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
-                                                break;
+
+                                                string GA_part = csDatabase.isPartExistingInMapping("GA", strPQPartNo, strPQColorSfx);
+                                                string GU_part = GA_part == null ? csDatabase.isPartExistingInMapping("GU", strPQPartNo, strPQColorSfx) : "";
+
+                                                if (GU_part != "" && GU_part != null)
+                                                {
+                                                    //means that this part is a gu part
+                                                    //then update the ga part to -99 with its gw and 
+                                                    string MappedGaPart = csDatabase.GetGaPartNo(strPQPartNo, strPQColorSfx);
+                                                    int lastHyphenIndex = MappedGaPart.LastIndexOf('-');
+
+                                                    string ga_partno = MappedGaPart.Substring(0, lastHyphenIndex);
+                                                    string ga_color = MappedGaPart.Substring(lastHyphenIndex + 1);
+
+                                                    DataSet MappedGwNoPhyAddrDs = csDatabase.GetAddrNBlockPartExistInRack(ga_partno, ga_color, strLine);
+                                                    DataTable MappedGwNoPhyAddrDt = new DataTable();
+                                                    MappedGwNoPhyAddrDt = MappedGwNoPhyAddrDs.Tables[0];
+                                                    String MappedgwNo = "";
+                                                    String MappedphhyAddr = "";
+                                                    MappedgwNo = Convert.ToString(MappedGwNoPhyAddrDt.Rows[0]["gw_no"]);
+                                                    MappedphhyAddr = Convert.ToString(MappedGwNoPhyAddrDt.Rows[0]["physical_add"]);
+
+                                                    Boolean blMappedPartQuantityUpdated = csDatabase.UpdPartQuantity(MappedgwNo, MappedphhyAddr, strURN, "-99");
+                                                    Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(gwNo, phhyAddr, strURN, strPQuantity);
+                                                    if (!blMappedPartQuantityUpdated)
+                                                    {
+                                                        pbGenIns.Image = global::Perodua.Properties.Resources.red;
+                                                        txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update -99 Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
+                                                        csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update -99 Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
+                                                        break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(gwNo, phhyAddr, strURN, strPQuantity);
+                                                    if (!blPartQuantityUpdated)
+                                                    {
+                                                        pbGenIns.Image = global::Perodua.Properties.Resources.red;
+                                                        txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
+                                                        csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
+                                                        break;
+                                                    }
+                                                }
                                             }
                                         }
+
+
                                     }
 
                                     BindDpsResultGridView();

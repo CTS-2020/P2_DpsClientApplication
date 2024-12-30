@@ -61,6 +61,36 @@ namespace Perodua
             }
         }
 
+        public static string getDpsBindingScalarData(String sqlQuery)
+        {
+            SqlConnection sqlConn = null;
+            SqlCommand sqlCommand = new SqlCommand(sqlQuery);
+
+            try
+            {
+                sqlConn = ConnectToDpsSql();
+                sqlCommand.Connection = sqlConn;
+
+                //sqlConn.Open(); // Open the connection
+                var result = sqlCommand.ExecuteScalar(); // Execute the query and get the first column of the first row
+                return result?.ToString(); // Return the result as a string, or null if result is null
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                return null; // Return null if there's an exception
+            }
+            finally
+            {
+                if (sqlConn != null && sqlConn.State == ConnectionState.Open)
+                {
+                    sqlConn.Close(); // Ensure the connection is closed
+                }
+                sqlConn?.Dispose(); // Dispose of the connection
+                sqlCommand.Dispose(); // Dispose of the command
+            }
+        }
+
         public static DataSet getPisBindingDatasetData(String sqlQuery)
         {
             SqlConnection sqlConn = null;

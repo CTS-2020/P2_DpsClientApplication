@@ -494,5 +494,48 @@ namespace Perodua
                 return null;
             }
         }
+        public static string GetQuantityValueFromGwLm(String GwNo, String Lm, String URN)
+        {
+            String sqlQuery = $@"SELECT QtyGw{GwNo}Lm{Lm} FROM dt_DpsResultConv WHERE URN = '{URN.Trim()}'";
+
+            try
+            {
+                return ConnQuery.getDpsBindingScalarData(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                return null;
+            }
+        }
+        public static string isPartExistingInMapping(String strTypePart, String strPartNo, String strColorSfx)
+        {
+
+            string partNoCol = strTypePart == "GA" ? "ga_partNo" : "gu_partNo";
+            string colorSfxCol = strTypePart == "GA" ? "ga_colorSfx" : "gu_colorSfx";
+            String sqlQuery = String.Format("SELECT {0} + '-' + CAST({2} AS VARCHAR) AS 'PartSfx' FROM dt_PartMapping WHERE {0} = '{1}' AND {2} = '{3}'", partNoCol, strPartNo, colorSfxCol, strColorSfx);
+            try
+            {
+                return ConnQuery.getDpsBindingScalarData(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                return null;
+            }
+        }
+        public static string GetGaPartNo(String strPartNo, String strColorSfx)
+        {
+            String sqlQuery = $@"SELECT ga_partNo+'-'+ CAST(ga_colorSfx AS VARCHAR) AS 'PartSfx' FROM dt_PartMapping WHERE TRIM(gu_partNo) = '{strPartNo}' AND gu_colorSfx = '{strColorSfx}'";
+            try
+            {
+                return ConnQuery.getDpsBindingScalarData(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                return null;
+            }
+        }
     }
 }
