@@ -379,5 +379,120 @@ namespace Perodua
             }
 
         }
+        public static DataSet SrcPartQuantity(string strURN, string strLine)
+        {
+            String sqlQuery = String.Format("SELECT URN AS 'URN', ChassisNo AS 'ChassisNo', partNo AS 'PartNo', colorSfx AS 'ColorSfx', Quantity AS 'Quantity' FROM vw_PartQuantity WHERE URN = '{0}'", strURN.Trim());
+
+            try
+            {
+                return ConnQuery.getPisBindingDatasetData(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                return null;
+            }
+        }
+        public static Boolean ChkIsPartExistInRack(String strPartNo, String strColorSfx, String strLine)
+        {
+            string sqlQuery = $@"
+                DECLARE @GroupName NVARCHAR(50);
+                SELECT TOP 1 @GroupName = group_name 
+                FROM dt_GroupMst 
+                WHERE group_line = '{strLine}';
+
+                SELECT COUNT(r.rack_det_id)
+                FROM dt_RackMstDet r
+                INNER JOIN (
+                    SELECT block_name AS module_name
+                    FROM dt_BlockMst
+                    WHERE group_name = @GroupName
+                ) m ON r.module_name = m.module_name
+                WHERE TRIM(r.parts_no) = TRIM('{strPartNo}')
+                AND r.color_sfx = {strColorSfx}";
+
+            Console.WriteLine("Generated Query: " + sqlQuery);
+
+            try
+            {
+                Console.WriteLine("try to run chkDpsExistData");
+                return ConnQuery.chkMultipleSelectDpsExistData(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                Console.WriteLine(ex);
+                return false;
+            }
+        }
+
+        public static DataSet GetAddrNBlockPartExistInRack(String strPartNo, String strColorSfx, String strLine)
+        {
+            string sqlQuery = $@"
+                DECLARE @GroupName NVARCHAR(50);
+                SELECT TOP 1 @GroupName = group_name 
+                FROM dt_GroupMst 
+                WHERE group_line = '{strLine}';
+
+                SELECT 
+                    RM.rack_det_id,
+                    RM.module_add,
+                    RM.module_name,
+                    BM.gw_no,
+                    PA.physical_add
+                FROM dt_RackMstDet RM
+                INNER JOIN (
+                    SELECT block_name AS module_name
+                    FROM dt_BlockMst
+                    WHERE group_name = @GroupName
+                ) ValidModules ON RM.module_name = ValidModules.module_name
+                INNER JOIN dt_BlockMst BM ON BM.block_name = RM.module_name
+                INNER JOIN dt_PhysicalAddMst PA ON PA.module_add = RM.module_add
+                WHERE TRIM(RM.parts_no) = TRIM('{strPartNo}')
+                AND RM.color_sfx = {strColorSfx}";
+
+            Console.WriteLine("Generated Query GetAddrNBlockPartExistInRack: " + sqlQuery);
+
+            try
+            {
+                Console.WriteLine("try to run GetAddrNBlockPartExistInRack");
+                return ConnQuery.getDpsBindingDatasetData(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+        public static Boolean UpdPartQuantity(String strGwNo, String strLmAddr, String strURN, String strQuantity)
+        {
+            String sqlQuery = String.Format("UPDATE dt_DpsResultConv SET QtyGw{0}Lm{1} = {2} WHERE URN = '{3}' ", strGwNo, strLmAddr, strQuantity, strURN);
+
+            try
+            {
+                return ConnQuery.ExecuteDpsQuery(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                return false;
+            }
+        }
+
+        public static DataSet GetBlockGW_DD()
+        {
+            String sqlQuery = String.Format("SELECT gw_no AS 'desc' FROM dt_BlockMst");
+
+            try
+            {
+                return ConnQuery.getDpsBindingDatasetData(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                return null;
+            }
+        }
     }
 }

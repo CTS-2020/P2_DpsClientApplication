@@ -466,6 +466,65 @@ namespace Perodua
 
                                 if (boolUpdConv)
                                 {
+
+                                    DataSet dsPartQuantity = new DataSet();
+                                    DataTable dtPartQuantity = new DataTable();
+
+                                    dsPartQuantity = csDatabase.SrcPartQuantity(strURN, strLine);
+                                    dtPartQuantity = dsPartQuantity.Tables[0];
+
+                                    for (int curIndex = 0; curIndex < dtPartQuantity.Rows.Count; curIndex++)
+                                    {
+                                        //SELECT URN AS 'URN', CHassisNo AS 'ChassisNo', PartNo AS 'PartNo', ColorSfx AS 'ColorSfx', Quantity AS 'Quantity' FROM vw_PartQuantity WHERE URN = {0}", strURN)
+                                        string strPQChassisNo = "";
+                                        string strPQPartNo = "";
+                                        string strPQColorSfx = "";
+                                        string strPQuantity = "";
+
+                                        if (Convert.ToString(dtPartQuantity.Rows[curIndex]["ChassisNo"]).Trim() != "")
+                                        {
+                                            strPQChassisNo = Convert.ToString(dtPartQuantity.Rows[curIndex]["ChassisNo"]).Trim();
+                                        }
+                                        if (Convert.ToString(dtPartQuantity.Rows[curIndex]["PartNo"]).Trim() != "")
+                                        {
+                                            strPQPartNo = Convert.ToString(dtPartQuantity.Rows[curIndex]["PartNo"]).Trim();
+                                        }
+                                        if (Convert.ToString(dtPartQuantity.Rows[curIndex]["ColorSfx"]).Trim() != "")
+                                        {
+                                            strPQColorSfx = Convert.ToString(dtPartQuantity.Rows[curIndex]["ColorSfx"]).Trim();
+                                        }
+                                        if (Convert.ToString(dtPartQuantity.Rows[curIndex]["Quantity"]).Trim() != "")
+                                        {
+                                            strPQuantity = Convert.ToString(dtPartQuantity.Rows[curIndex]["Quantity"]).Trim();
+                                        }
+
+                                        Boolean isPartExistingInRack = csDatabase.ChkIsPartExistInRack(strPQPartNo, strPQColorSfx, strLine);
+                                        if (isPartExistingInRack)
+                                        {
+                                            DataSet GwNoPhyAddrDs = csDatabase.GetAddrNBlockPartExistInRack(strPQPartNo, strPQColorSfx, strLine);
+                                            DataTable GwNoPhyAddrDt = new DataTable();
+                                            GwNoPhyAddrDt = GwNoPhyAddrDs.Tables[0];
+
+                                            string DtString = DataTableToString(GwNoPhyAddrDt);
+                                            Console.WriteLine(DtString);
+                                            csDatabase.Log("Record get from GetAddrNBlockPartExistInRack: " + DtString);
+
+                                            String gwNo = "";
+                                            String phhyAddr = "";
+                                            gwNo = Convert.ToString(GwNoPhyAddrDt.Rows[0]["gw_no"]);
+                                            phhyAddr = Convert.ToString(GwNoPhyAddrDt.Rows[0]["physical_add"]);
+
+                                            Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(gwNo, phhyAddr, strURN, strPQuantity);
+                                            if (!blPartQuantityUpdated)
+                                            {
+                                                pbGenIns.Image = global::Perodua.Properties.Resources.red;
+                                                txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
+                                                csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
+                                                break;
+                                            }
+                                        }
+                                    }
+
                                     BindDpsResultGridView();
                                     BindDpsResultConvGridView();
 
@@ -645,7 +704,29 @@ namespace Perodua
 
         }
 
+        public static string DataTableToString(DataTable table)
+        {
+            StringBuilder sb = new StringBuilder();
 
+            // Append column names
+            foreach (DataColumn col in table.Columns)
+            {
+                sb.Append(col.ColumnName + "\t");
+            }
+            sb.AppendLine();
+
+            // Append row data
+            foreach (DataRow row in table.Rows)
+            {
+                foreach (var item in row.ItemArray)
+                {
+                    sb.Append(item.ToString() + "\t");
+                }
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
         #endregion
 
         #region Events

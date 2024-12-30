@@ -99,7 +99,7 @@ namespace Perodua
             SqlDataReader sqlReader = null;
 
             Boolean ExistRow = false;
-
+            Console.WriteLine("accept query and try to run : " + sqlQuery);
             sqlConn = ConnectToDpsSql();
             sqlCommand = new SqlCommand(sqlQuery, sqlConn);
             sqlReader = sqlCommand.ExecuteReader();
@@ -114,8 +114,37 @@ namespace Perodua
 
             sqlConn.Close();
             sqlConn.Dispose();
-
+            Console.WriteLine("executed and return value later : " + ExistRow);
             return ExistRow;
+        }
+
+        public static Boolean chkMultipleSelectDpsExistData(String sqlQuery)
+        {
+            try
+            {
+                using (SqlConnection sqlConn = ConnectToDpsSql())
+                {
+                    // Remove the sqlConn.Open() since connection is already open
+                    using (SqlCommand sqlCommand = new SqlCommand(sqlQuery, sqlConn))
+                    {
+                        object result = sqlCommand.ExecuteScalar();
+                        Console.WriteLine($"Raw result from database: {result}");
+
+                        if (result != null)
+                        {
+                            int count = Convert.ToInt32(result);
+                            Console.WriteLine($"Converted count: {count}");
+                            return count > 0;
+                        }
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in chkDpsExistData: {ex.Message}");
+                return false;
+            }
         }
 
         public static Boolean chkPisExistData(String sqlQuery)

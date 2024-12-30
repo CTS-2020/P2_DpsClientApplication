@@ -123,7 +123,18 @@ namespace Perodua
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Width = 50,
             };
-            cbGwNo.Items.AddRange(new string[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" });
+            DataSet GwNoDs = new DataSet();
+            DataTable GwNoDt = new DataTable();
+
+            GwNoDs = csDatabase.GetBlockGW_DD();
+            GwNoDt = GwNoDs.Tables[0];
+
+            foreach (DataRow row in GwNoDt.Rows)
+            {
+                cbGwNo.Items.Add(row["desc"].ToString()); // Add the "desc" column values
+            }
+
+            //cbGwNo.Items.AddRange(new string[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" });
             if (!string.IsNullOrEmpty(GwNo) && cbGwNo.Items.Contains(GwNo))
             {
                 cbGwNo.SelectedItem = GwNo;
