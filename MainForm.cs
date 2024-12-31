@@ -473,6 +473,10 @@ namespace Perodua
                                     dsPartQuantity = csDatabase.SrcPartQuantity(strURN, strLine);
                                     dtPartQuantity = dsPartQuantity.Tables[0];
 
+                                    string PQDtString = DataTableToString(dtPartQuantity);
+                                    Console.WriteLine(PQDtString);
+                                    csDatabase.Log("Record get from vw_PartQuantity: " + PQDtString);
+
                                     for (int curIndex = 0; curIndex < dtPartQuantity.Rows.Count; curIndex++)
                                     {
                                         //SELECT URN AS 'URN', CHassisNo AS 'ChassisNo', PartNo AS 'PartNo', ColorSfx AS 'ColorSfx', Quantity AS 'Quantity' FROM vw_PartQuantity WHERE URN = {0}", strURN)
@@ -499,6 +503,17 @@ namespace Perodua
                                         }
 
                                         Boolean isPartExistingInRack = csDatabase.ChkIsPartExistInRack(strPQPartNo, strPQColorSfx, strLine);
+
+                                        if (isPartExistingInRack)
+                                        {
+                                            csDatabase.Log($@"ChkIsPartExistInRack input partNo : {strPQPartNo} , colorSfx : {strPQColorSfx}, Line : {strLine} ------- Output : {isPartExistingInRack}, {Environment.NewLine} Note: If true means the part is existing in any rack in the line (Group) {Environment.NewLine} If the view having 6 records but having different line 1/2, will update quantity for current line only!!");
+                                        }
+                                        else
+                                        {
+                                            csDatabase.Log($@"ChkIsPartExistInRack input partNo : {strPQPartNo} , colorSfx : {strPQColorSfx}, Line : {strLine} ------- Output : {isPartExistingInRack}, {Environment.NewLine} Note: Potential Cause: {Environment.NewLine}1. The Module address assigned in dt_RackMstDet (Rack master page) is in different group line. {Environment.NewLine}2.Part is not exist in any rack. (cannot find record in dt_RackMstDet) {Environment.NewLine}");
+                                        }
+                                        
+
                                         if (isPartExistingInRack)
                                         {
                                             DataSet GwNoPhyAddrDs = csDatabase.GetAddrNBlockPartExistInRack(strPQPartNo, strPQColorSfx, strLine);
@@ -545,7 +560,7 @@ namespace Perodua
                                                     {
                                                         pbGenIns.Image = global::Perodua.Properties.Resources.red;
                                                         txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update -99 Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
-                                                        csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update -99 Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
+                                                        csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update '-99' Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
                                                         break;
                                                     }
                                                 }
@@ -562,8 +577,6 @@ namespace Perodua
                                                 }
                                             }
                                         }
-
-
                                     }
 
                                     BindDpsResultGridView();

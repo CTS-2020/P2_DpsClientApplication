@@ -381,7 +381,7 @@ namespace Perodua
         }
         public static DataSet SrcPartQuantity(string strURN, string strLine)
         {
-            String sqlQuery = String.Format("SELECT URN AS 'URN', ChassisNo AS 'ChassisNo', partNo AS 'PartNo', colorSfx AS 'ColorSfx', Quantity AS 'Quantity' FROM vw_PartQuantity WHERE URN = '{0}'", strURN.Trim());
+            String sqlQuery = String.Format("SELECT URN AS 'URN', ChassisNo AS 'ChassisNo', partNo AS 'PartNo', colorSfx AS 'ColorSfx', Quantity AS 'Quantity' FROM vw_PartQuantity WHERE URN = '{0}' ORDER BY uid", strURN.Trim());
 
             try
             {
