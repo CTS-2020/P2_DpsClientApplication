@@ -537,5 +537,19 @@ namespace Perodua
                 return null;
             }
         }
+        public static string GetPartCountryStatus(String strPartNo, String strColorSfx, String strCountryCode)
+        {
+            String sqlQuery = $@"SELECT countryStatus FROM dt_CountryStatus WHERE countryCode = '{strCountryCode}' AND partNo = '{strPartNo}' AND colorSfx = '{strColorSfx}'";
+
+            try
+            {
+                return ConnQuery.getDpsBindingScalarData(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                return null;
+            }
+        }
     }
 }

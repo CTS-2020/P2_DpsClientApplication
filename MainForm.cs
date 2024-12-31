@@ -285,6 +285,7 @@ namespace Perodua
                         String strInsCode = "";
                         String strURN = "";
                         String strLine = "";
+                        String strCountryCode = "";
                         #endregion
 
                         #region Get New Dps Result Info
@@ -336,6 +337,10 @@ namespace Perodua
                         if (Convert.ToString(dtNewDpsResult.Rows[i]["Line"]).Trim() != "")
                         {
                             strLine = Convert.ToString(dtNewDpsResult.Rows[i]["Line"]);
+                        }
+                        if (Convert.ToString(dtNewDpsResult.Rows[i]["CountryCode"]).Trim() != "")
+                        {
+                            strCountryCode = Convert.ToString(dtNewDpsResult.Rows[i]["CountryCode"]);
                         }
                         #endregion
 
@@ -512,7 +517,7 @@ namespace Perodua
                                         {
                                             csDatabase.Log($@"ChkIsPartExistInRack input partNo : {strPQPartNo} , colorSfx : {strPQColorSfx}, Line : {strLine} ------- Output : {isPartExistingInRack}, {Environment.NewLine} Note: Potential Cause: {Environment.NewLine}1. The Module address assigned in dt_RackMstDet (Rack master page) is in different group line. {Environment.NewLine}2.Part is not exist in any rack. (cannot find record in dt_RackMstDet) {Environment.NewLine}");
                                         }
-                                        
+
 
                                         if (isPartExistingInRack)
                                         {
@@ -566,14 +571,31 @@ namespace Perodua
                                                 }
                                                 else
                                                 {
-                                                    Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(gwNo, phhyAddr, strURN, strPQuantity);
-                                                    if (!blPartQuantityUpdated)
+                                                    string CountryCode = csDatabase.GetPartCountryStatus(strPQPartNo, strPQColorSfx, strCountryCode);
+                                                    Console.WriteLine($@"GetPartCountryStatus {strPQPartNo}, {strPQColorSfx}, {strCountryCode} , ------Output : {CountryCode}");
+                                                    if (CountryCode == "False")
                                                     {
-                                                        pbGenIns.Image = global::Perodua.Properties.Resources.red;
-                                                        txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
-                                                        csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
-                                                        break;
+                                                        Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(gwNo, phhyAddr, strURN, "-99");
+                                                        if (!blPartQuantityUpdated)
+                                                        {
+                                                            pbGenIns.Image = global::Perodua.Properties.Resources.red;
+                                                            txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
+                                                            csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
+                                                            break;
+                                                        }
                                                     }
+                                                    else
+                                                    {
+                                                        Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(gwNo, phhyAddr, strURN, strPQuantity);
+                                                        if (!blPartQuantityUpdated)
+                                                        {
+                                                            pbGenIns.Image = global::Perodua.Properties.Resources.red;
+                                                            txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
+                                                            csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
+                                                            break;
+                                                        }
+                                                    }
+
                                                 }
                                             }
                                         }
