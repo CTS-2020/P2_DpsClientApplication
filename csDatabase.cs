@@ -196,11 +196,11 @@ namespace Perodua
         //    }
         //}
 
-        public static Boolean UpdDpsConv(String strPlcNo, String strPointer, String strModel, String strSfx, String strColor, String strInsCode, String strBseq, String strIdNo, String strIdVer, String strChassisNo, String strDpsRsConvId, String strURN, String strLine)
+        public static Boolean UpdDpsConv(String strPlcNo, String strPointer, String strModel, String strSfx, String strColor, String strInsCode, String strBseq, String strIdNo, String strIdVer, String strChassisNo, String strDpsRsConvId, String strURN, String strLine, String strCountryCode)
         {
             try
             {
-                String sqlQueryUpdConv = "UPDATE dt_DpsResultConv SET Line = '" + strLine + "', read_flag = '0', plc_no = '" + strPlcNo + "', write_pointer = '" + strPointer + "', model = '" + strModel + "', sfx = '" + strSfx + "', color_code = '" + strColor + "', dps_ins_code = '" + strInsCode + "', bseq = '" + strBseq + "', id_no = '" + strIdNo + "', id_ver = '" + strIdNo + "', URN = '" + strURN + "', chassis_no = '" + strChassisNo + "', last_updated = CURRENT_TIMESTAMP WHERE dps_rs_conv_id = '" + strDpsRsConvId + "';";
+                String sqlQueryUpdConv = "UPDATE dt_DpsResultConv SET Line = '" + strLine + "', read_flag = '0', plc_no = '" + strPlcNo + "', write_pointer = '" + strPointer + "', model = '" + strModel + "', sfx = '" + strSfx + "', color_code = '" + strColor + "', dps_ins_code = '" + strInsCode + "', bseq = '" + strBseq + "', id_no = '" + strIdNo + "', id_ver = '" + strIdNo + "', URN = '" + strURN + "', chassis_no = '" + strChassisNo + "', last_updated = CURRENT_TIMESTAMP, CountryCode = '" + strCountryCode + "' WHERE dps_rs_conv_id = '" + strDpsRsConvId + "';";
                 String sqlQueryUpdPointer = "UPDATE dt_PlcPointerMst SET pointer = '" + Convert.ToString(Convert.ToInt32(strPointer) + 1) + "' WHERE plc_no = '" + strPlcNo + "' AND flag_type = 'W';";
                 String sqlQueryUpdPis = "UPDATE DPSResult SET DPSImportDate = CURRENT_TIMESTAMP WHERE IDN = '" + strIdNo + "' AND IDVer = '" + strIdVer + "';";
 
@@ -213,11 +213,11 @@ namespace Perodua
             }
         }
 
-        public static Boolean SvDpsConv(String strPlcNo, String strPointer, String strModel, String strSfx, String strColor, String strInsCode, String strBseq, String strIdNo, String strIdVer, String strChassisNo, String strDpsRsConvId, String strURN, String strLine)
+        public static Boolean SvDpsConv(String strPlcNo, String strPointer, String strModel, String strSfx, String strColor, String strInsCode, String strBseq, String strIdNo, String strIdVer, String strChassisNo, String strDpsRsConvId, String strURN, String strLine, String strCountryCode)
         {
             try
             {
-                String sqlQueryUpdConv = "INSERT INTO dt_DpsResultConv (read_flag, plc_no, write_pointer, model, sfx, color_code, dps_ins_code, bseq, id_no, id_ver, chassis_no, last_updated, dps_rs_conv_id, URN,Line) VALUES ('0', '" + strPlcNo + "', '" + strPointer + "', '" + strModel + "', '" + strSfx + "', '" + strColor + "', '" + strInsCode + "', '" + strBseq + "', '" + strIdNo + "', '" + strIdVer + "', '" + strChassisNo + "', CURRENT_TIMESTAMP, '" + strDpsRsConvId + "', '" + strURN + "', '" + strLine + "')";
+                String sqlQueryUpdConv = "INSERT INTO dt_DpsResultConv (read_flag, plc_no, write_pointer, model, sfx, color_code, dps_ins_code, bseq, id_no, id_ver, chassis_no, last_updated, dps_rs_conv_id, URN, Line, CountryCode) VALUES ('0', '" + strPlcNo + "', '" + strPointer + "', '" + strModel + "', '" + strSfx + "', '" + strColor + "', '" + strInsCode + "', '" + strBseq + "', '" + strIdNo + "', '" + strIdVer + "', '" + strChassisNo + "', CURRENT_TIMESTAMP, '" + strDpsRsConvId + "', '" + strURN + "', '" + strLine + "', '" + strCountryCode + "')";
                 String sqlQueryUpdPointer = "UPDATE dt_PlcPointerMst SET pointer = '" + Convert.ToString(Convert.ToInt32(strPointer) + 1) + "' WHERE plc_no = '" + strPlcNo + "' AND flag_type = 'W';";
                 String sqlQueryUpdPis = "UPDATE DPSResult SET DPSImportDate = CURRENT_TIMESTAMP WHERE IDN = '" + strIdNo + "' AND IDVer = '" + strIdVer + "';";
 
@@ -544,6 +544,20 @@ namespace Perodua
             try
             {
                 return ConnQuery.getDpsBindingScalarData(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                csDatabase.Log(ex);
+                return null;
+            }
+        }
+        public static DataSet GetPartCountryListingByCountryCode(String strCountryCode)
+        {
+            String sqlQuery = $@"SELECT partName, partNo, colorSfx, countryStatus FROM dt_CountryStatus WHERE countryCode = '{strCountryCode}'";
+
+            try
+            {
+                return ConnQuery.getDpsBindingDatasetData(sqlQuery);
             }
             catch (Exception ex)
             {

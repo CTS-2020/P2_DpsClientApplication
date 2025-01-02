@@ -459,13 +459,13 @@ namespace Perodua
                                     }
                                     else
                                     {
-                                        boolUpdConv = csDatabase.UpdDpsConv(strPlcNo, strWritePointer, strModel, strSfx, strColor, strInsCode, strBodySeq, strIdNo, strIdVer, strChassisNo, strDpsRsConvId, strURN, strLine);
+                                        boolUpdConv = csDatabase.UpdDpsConv(strPlcNo, strWritePointer, strModel, strSfx, strColor, strInsCode, strBodySeq, strIdNo, strIdVer, strChassisNo, strDpsRsConvId, strURN, strLine, strCountryCode);
                                         //boolUpdPrtQty = csDatabase.UpdNewPartQty(strURN, strPlcNo);
                                     }
                                 }
                                 else
                                 {
-                                    boolUpdConv = csDatabase.SvDpsConv(strPlcNo, strWritePointer, strModel, strSfx, strColor, strInsCode, strBodySeq, strIdNo, strIdVer, strChassisNo, strDpsRsConvId, strURN, strLine);
+                                    boolUpdConv = csDatabase.SvDpsConv(strPlcNo, strWritePointer, strModel, strSfx, strColor, strInsCode, strBodySeq, strIdNo, strIdVer, strChassisNo, strDpsRsConvId, strURN, strLine, strCountryCode);
                                     //boolUpdPrtQty = csDatabase.UpdNewPartQty(strURN, strPlcNo);
                                 }
 
@@ -571,35 +571,73 @@ namespace Perodua
                                                 }
                                                 else
                                                 {
-                                                    string CountryCode = csDatabase.GetPartCountryStatus(strPQPartNo, strPQColorSfx, strCountryCode);
-                                                    Console.WriteLine($@"GetPartCountryStatus {strPQPartNo}, {strPQColorSfx}, {strCountryCode} , ------Output : {CountryCode}");
-                                                    if (CountryCode == "False")
+                                                    Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(gwNo, phhyAddr, strURN, strPQuantity);
+                                                    if (!blPartQuantityUpdated)
                                                     {
-                                                        Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(gwNo, phhyAddr, strURN, "-99");
-                                                        if (!blPartQuantityUpdated)
-                                                        {
-                                                            pbGenIns.Image = global::Perodua.Properties.Resources.red;
-                                                            txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
-                                                            csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
-                                                            break;
-                                                        }
+                                                        pbGenIns.Image = global::Perodua.Properties.Resources.red;
+                                                        txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
+                                                        csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
+                                                        break;
                                                     }
-                                                    else
-                                                    {
-                                                        Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(gwNo, phhyAddr, strURN, strPQuantity);
-                                                        if (!blPartQuantityUpdated)
-                                                        {
-                                                            pbGenIns.Image = global::Perodua.Properties.Resources.red;
-                                                            txtLog.Text = System.Environment.NewLine + "---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}." + txtLog.Text;
-                                                            csDatabase.Log("---[" + DateTime.Now + "]--- Error: " + "[Upd DPS] NG, URN [" + strURN + "] IDN[" + strIdNo + "] IDNVer[" + strIdVer + "] Failed to Update Part Quantity for QtyGw{" + gwNo + "}LM{" + phhyAddr + "}.");
-                                                            break;
-                                                        }
-                                                    }
-
                                                 }
                                             }
                                         }
                                     }
+
+                                    DataSet dsCountryPart = new DataSet();
+                                    DataTable dtCountryPart = new DataTable();
+
+                                    dsCountryPart = csDatabase.GetPartCountryListingByCountryCode(strCountryCode);
+                                    dtCountryPart = dsCountryPart.Tables[0];
+
+                                    string CDtString = DataTableToString(dtCountryPart);
+                                    Console.WriteLine(CDtString);
+                                    csDatabase.Log("Record get from dt_CountryStatus: " + PQDtString);
+
+                                    for (int curIndex = 0; curIndex < dtCountryPart.Rows.Count; curIndex++)
+                                    {
+                                        string strCpartName = "";
+                                        string strCpartNo = "";
+                                        string strCcolorSfx = "";
+                                        string strCstatus = "";
+
+                                        if (Convert.ToString(dtCountryPart.Rows[curIndex]["partName"]).Trim() != "")
+                                        {
+                                            strCpartName = Convert.ToString(dtCountryPart.Rows[curIndex]["partName"]).Trim();
+                                        }
+                                        if (Convert.ToString(dtCountryPart.Rows[curIndex]["partNo"]).Trim() != "")
+                                        {
+                                            strCpartNo = Convert.ToString(dtCountryPart.Rows[curIndex]["partNo"]).Trim();
+                                        }
+                                        if (Convert.ToString(dtCountryPart.Rows[curIndex]["colorSfx"]).Trim() != "")
+                                        {
+                                            strCcolorSfx = Convert.ToString(dtCountryPart.Rows[curIndex]["colorSfx"]).Trim();
+                                        }
+                                        if (Convert.ToString(dtCountryPart.Rows[curIndex]["countryStatus"]).Trim() != "")
+                                        {
+                                            strCstatus = Convert.ToString(dtCountryPart.Rows[curIndex]["countryStatus"]).Trim();
+                                        }
+
+                                        DataSet CGwNoPhyAddrDs = csDatabase.GetAddrNBlockPartExistInRack(strCpartNo.Trim(), strCcolorSfx, strLine);
+                                        DataTable CGwNoPhyAddrDt = new DataTable();
+                                        CGwNoPhyAddrDt = CGwNoPhyAddrDs.Tables[0];
+
+                                        if (CGwNoPhyAddrDt.Rows.Count > 0)
+                                        {
+                                            string CGwNoPhyAddrDtString = DataTableToString(CGwNoPhyAddrDt);
+                                            Console.WriteLine(CGwNoPhyAddrDtString);
+                                            csDatabase.Log("GwNo, Phys Addr Record get from dt_CountryStatus: " + CGwNoPhyAddrDtString);
+
+                                            String CgwNo = "";
+                                            String CphhyAddr = "";
+                                            CgwNo = Convert.ToString(CGwNoPhyAddrDt.Rows[0]["gw_no"]);
+                                            CphhyAddr = Convert.ToString(CGwNoPhyAddrDt.Rows[0]["physical_add"]);
+
+                                            Boolean blPartQuantityUpdated = csDatabase.UpdPartQuantity(CgwNo, CphhyAddr, strURN, "-99");
+                                        }
+
+                                    }
+
 
                                     BindDpsResultGridView();
                                     BindDpsResultConvGridView();
